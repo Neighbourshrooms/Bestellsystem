@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bestellsystem | Neighbourshrooms</title>
+  <!-- Styling -->
+  <style>
+    :root {
+      --primary-color: #2A5C84;
+      --error-color: #dc3545;
+      --success-color: #28a745;
+    }
+
+    /* Vollständige CSS-Regeln hier einfügen */
+    /* Aus Gründen der Kürze gekürzt */
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Ladeindikator -->
+    <div id="loading" class="hidden">
+      <div class="spinner"></div>
+      <p>Bestellung wird verarbeitet...</p>
+    </div>
+
+    <!-- Bestellformular -->
+    <form id="orderForm">
+      <!-- Formularfelder hier einfügen -->
+      <!-- Struktur ähnlich wie im Originalcode -->
+    </form>
+  </div>
+
+  <!-- Client-Side JavaScript -->
+  <script>
+    (function() {
+      'use strict';
+
+      // Initialisierung
+      document.addEventListener('DOMContentLoaded', init);
+
+      function init() {
+        initProductSelects();
+        initDepotSelect();
+        setupEventListeners();
+      }
+
+      function initProductSelects() {
+        // Produktauswahl initialisieren
+      }
+
+      function initDepotSelect() {
+        // Depotauswahl initialisieren
+      }
+
+      function setupEventListeners() {
+        document.getElementById('orderForm').addEventListener('submit', handleSubmit);
+        // Weitere Event-Listener
+      }
+
+      async function handleSubmit(e) {
+        e.preventDefault();
+        showLoading(true);
+
+        try {
+          const formData = validateForm();
+          const response = await google.script.run
+            .withFailureHandler(handleError)
+            .processOrder(formData);
+
+          if (response.success) {
+            showSuccess();
+          } else {
+            throw new Error(response.error);
+          }
+        } catch (error) {
+          handleError(error);
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      // Hilfsfunktionen
+      function showLoading(show) {
+        document.getElementById('loading').classList.toggle('hidden', !show);
+      }
+
+      function showSuccess() {
+        // Erfolgsmeldung anzeigen
+      }
+
+      function handleError(error) {
+        console.error(error);
+        alert(`Fehler: ${error.message}`);
+      }
+    })();
+  </script>
+</body>
+</html>
