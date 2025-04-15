@@ -144,9 +144,92 @@ function sanitizeFormData(form) {
   };
 }
 
+/**
+ * Erstellt den E-Mail-Body für Bestellbestätigungen
+ * @param {Object} form - Bestelldaten
+ * @param {number} total - Gesamtbetrag
+ * @return {string} Formatierter E-Mail-Text
+ */
 function buildEmailBody(form, total) {
-  // Implementierung ähnlich wie im Originalcode
-  // ... (Aus Gründen der Kürze gekürzt)
+  const deliveryMethodLabels = {
+    'Abholung': 'Abholung im Depot',
+    'Lieferung': 'Lieferung an Adresse'
+  };
+
+  // Kopfbereich der E-Mail
+  let emailBody = `
+    ===== NEUE BESTELLUNG =====
+    
+    Bestelldatum: ${new Date().toLocaleDateString('de-DE')}
+    Kundendaten:
+    - Name: ${form.name}
+    - E-Mail: ${form.email}
+    
+    ${form.preOrder ? '❗ VORBESTELLUNG (komplette Menge)' : '🔹 Sofort verfügbare Bestellung'}
+  `;
+
+  // Produktliste
+  emailBody += '\n\nBestellte Produkte:\n';
+  form.products.forEach(item => {
+    const product = products.find(p => p.name === item.id);
+    const subtotal = calculatePrice(product, item.quantity);
+    
+    emailBody += `- ${item.quantity} ${product.unit} ${product.name}`;
+    emailBody += ` (${subtotal.toFixed(2)} €)\n`;
+    
+    if (product.preferredDelivery) {
+      emailBody += `  ⏳ Bevorzugter Liefertag: ${product.preferredDelivery}\n`;
+    }
+  });
+
+  // Preisübersicht
+  emailBody += `
+    \nZusammenfassung:
+    Zwischensumme: ${total.toFixed(2)} €
+    ${form.deliveryMethod === 'Lieferung' ? 'Versandkosten: 0.00 €\n' : ''}
+    Gesamtbetrag: ${total.toFixed(2)} €
+  `;
+
+  // Lieferdetails
+  emailBody += '\n\nLieferinformationen:\n';
+  emailBody += `- Art: ${deliveryMethodLabels[form.deliveryMethod] || form.deliveryMethod}\n`;
+
+  if (form.deliveryMethod === 'Abholung') {
+    const depot = depots.find(d => d.id === form.depot);
+    emailBody += `- Depot: ${depot.name}\n`;
+    emailBody += `- Adresse: ${depot.address}\n`;
+    emailBody += `- Öffnungszeiten: ${depot.hours}\n`;
+    if (form.pickupTimeWindow) {
+      emailBody += `- Zeitfenster: ${form.pickupTimeWindow}\n`;
+    }
+  } else {
+    emailBody += `- Lieferadresse:\n`;
+    emailBody += `  ${form.street}\n`;
+    emailBody += `  ${form.postalCode} ${form.city}\n`;
+  }
+
+  // Vorbestellungsdetails
+  if (form.preOrder && form.preferredDeliveryDate) {
+    emailBody += `\nVorbestellung für: ${form.preferredDeliveryDate}\n`;
+  }
+
+  // Kundennachricht
+  if (form.message) {
+    emailBody += `\nKundennachricht:\n"${form.message}"\n`;
+  }
+
+  // Fußzeile
+  emailBody += `
+    \n\n===== SYSTEMINFORMATIONEN =====
+    Bestell-ID: ${Utilities.getUuid()}
+    Verarbeitet am: ${new Date().toISOString()}
+    Systemversion: 2.1.0
+  `;
+
+  // Formatierung für bessere Lesbarkeit
+  return emailBody
+    .replace(/^ {4}/gm, '') // Entfernt Einrückungen
+    .trim();
 }
 
 function saveOrder(form) {
