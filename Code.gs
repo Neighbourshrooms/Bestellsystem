@@ -1,5 +1,5 @@
 /**
- * @OnlyCurrentDoc
+ * @neighbourshrooms
  * 
  * Open-Source Bestellsystem für Lebensmittelkooperativen
  * Lizenz: MIT
